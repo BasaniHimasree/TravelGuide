@@ -11,35 +11,48 @@ class TravelGuide extends Component {
   }
 
   getTravelData = async () => {
-    const response = await fetch('https://apis.ccbp.in/tg/packages')
-    const data = await response.json()
-    console.log(data)
+    const options = {
+      method: 'GET',
+    }
+    const response = await fetch('https://apis.ccbp.in/tg/packages', options)
+    if (response.ok) {
+      const data = await response.json()
+      console.log(data.packages)
 
-    const updatedData = [
-      data.packages.map(eachItem => ({
+      const updatedData = data.packages.map(eachItem => ({
         id: eachItem.id,
         imageUrl: eachItem.image_url,
         name: eachItem.name,
         description: eachItem.description,
-      })),
-    ]
-    this.setState({travelData: updatedData, isLoading: false})
+      }))
+
+      this.setState({travelData: updatedData, isLoading: false})
+    }
   }
 
+  renderLocationList = () => {
+    const {travelData} = this.state
+    return (
+      <ul>
+        {travelData.map(eachItem => (
+          <EachTrip tripDetails={eachItem} key={eachItem.id} />
+        ))}
+      </ul>
+    )
+  }
+
+  renderLoading = () => (
+    <div data-testid="loader">
+      <Loader type="TailSpin" color="#00BFFF" height={50} width={50} />
+    </div>
+  )
+
   render() {
-    const {travelData, isLoading} = this.state
+    const {isLoading} = this.state
     return (
       <div className="container">
         <h1 className="heading">Travel Guide</h1>
-        {isLoading ? (
-          <div data-testid="loader">
-            <Loader type="TailSpin" color="#00BFFF" height={50} width={50} />
-          </div>
-        ) : (
-          travelData.map(eachItem => (
-            <EachTrip tripDetails={eachItem} key={eachItem.id} />
-          ))
-        )}
+        {isLoading ? this.renderLoading() : this.renderLocationList()}
       </div>
     )
   }
